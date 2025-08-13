@@ -4,17 +4,20 @@ using UnityEngine.Events;
 [RequireComponent(typeof(BoxCollider))]
 public class AlarmZone : MonoBehaviour
 {
-    public UnityAction RubberEntered;
-    public UnityAction RubberExitted;
-
+    private AlarmCenter _alarmCenter;
     private bool isRubberStay;
+
+    public void Initilize(AlarmCenter alarmCenter)
+    {
+        _alarmCenter = alarmCenter;
+    }
 
     private void OnTriggerEnter(Collider collider)
     {
         if (collider.TryGetComponent(out Rubber rubber))
         {
             isRubberStay = true;
-            RubberEntered?.Invoke();
+            _alarmCenter?.Alarm();
         }
     }
 
@@ -23,7 +26,7 @@ public class AlarmZone : MonoBehaviour
         if (collider.TryGetComponent(out Rubber rubber))
         {
             isRubberStay = false;
-            RubberExitted?.Invoke();
+            _alarmCenter?.Disarm();
         }
     }
 
