@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class AlarmCenter : MonoBehaviour
 {
+    private readonly int _maxVolume = 1;
+    private readonly int _minVolume = 0;
+
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private List<AlarmZone> _zones;
     [Range(0, 1)]
@@ -15,7 +18,6 @@ public class AlarmCenter : MonoBehaviour
     private void Awake()
     {
         _audioSource = GetComponent<AudioSource>();
-        StartCoroutine(LerpVolume());
     }
 
     private void OnEnable()
@@ -24,8 +26,8 @@ public class AlarmCenter : MonoBehaviour
         {
             foreach (AlarmZone zone in _zones)
             {
-                zone.RubberEntered += EnableAlarm;
-                zone.RubberExitted += DisableAlarm;
+                zone.RubberEntered += ToggleAlarm;
+                zone.RubberExitted += ToggleAlarm;
             }
         }
     }
@@ -36,29 +38,47 @@ public class AlarmCenter : MonoBehaviour
         {
             foreach (AlarmZone zone in _zones)
             {
-                zone.RubberEntered -= EnableAlarm;
-                zone.RubberExitted -= DisableAlarm;
+                zone.RubberEntered -= ToggleAlarm;
+                zone.RubberExitted -= ToggleAlarm;
             }
         }
     }
 
+    private void ToggleAlarm()
+    {
+        if (_volumeCoroutine != null)
+        {
+            StopCoroutine(_volumeCoroutine);
+        }
+
+        _volumeCoroutine = StartCoroutine(LerpVolume(_isAlarmEnabled ? _minVolume : _maxVolume));
+        _isAlarmEnabled = !_isAlarmEnabled;
+    }
+
     private void EnableAlarm()
     {
-        _isAlarmEnabled = true;
+        if (_volumeCoroutine != null)
+        {
+            StopCoroutine( _volumeCoroutine);
+        }
+        StartCoroutine(LerpVolume(_maxVolume));
     }
 
     private void DisableAlarm()
     {
-        _isAlarmEnabled = false;
+        if (_volumeCoroutine != null)
+        {
+            StopCoroutine(_volumeCoroutine);
+        }
+        StartCoroutine(LerpVolume(_minVolume));
     }
 
 
-    private IEnumerator LerpVolume()
+    private IEnumerator LerpVolume(float target)
     {
-        while (enabled)
+        while (_audioSource.volume != target)
         {
-            float volumeDirection = _isAlarmEnabled ? 1 : 0;
-            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, volumeDirection, _volumeSpeed * Time.deltaTime);
+            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, target, _volumeSpeed * Time.deltaTime);
             yield return null;
         }
     }
