@@ -55,25 +55,6 @@ public class AlarmCenter : MonoBehaviour
         _isAlarmEnabled = !_isAlarmEnabled;
     }
 
-    private void EnableAlarm()
-    {
-        if (_volumeCoroutine != null)
-        {
-            StopCoroutine( _volumeCoroutine);
-        }
-        StartCoroutine(LerpVolume(_maxVolume));
-    }
-
-    private void DisableAlarm()
-    {
-        if (_volumeCoroutine != null)
-        {
-            StopCoroutine(_volumeCoroutine);
-        }
-        StartCoroutine(LerpVolume(_minVolume));
-    }
-
-
     private IEnumerator LerpVolume(float target)
     {
         while (_audioSource.volume != target)
