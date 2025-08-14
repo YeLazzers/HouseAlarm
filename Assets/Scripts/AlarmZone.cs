@@ -4,36 +4,28 @@ using UnityEngine.Events;
 [RequireComponent(typeof(BoxCollider))]
 public class AlarmZone : MonoBehaviour
 {
-    private AlarmCenter _alarmCenter;
-    private bool isRubberStay;
+    public event UnityAction<Collider> Triggered;
+    public event UnityAction<Collider> Released;
 
-    public void Initilize(AlarmCenter alarmCenter)
-    {
-        _alarmCenter = alarmCenter;
-    }
+    private bool isColliderStay;
+
 
     private void OnTriggerEnter(Collider collider)
     {
-        if (collider.TryGetComponent(out Rubber rubber))
-        {
-            isRubberStay = true;
-            _alarmCenter?.Alarm();
-        }
+        isColliderStay = true;
+        Triggered?.Invoke(collider);
     }
 
     private void OnTriggerExit(Collider collider)
     {
-        if (collider.TryGetComponent(out Rubber rubber))
-        {
-            isRubberStay = false;
-            _alarmCenter?.Disarm();
-        }
+        isColliderStay = false;
+        Released?.Invoke(collider);
     }
 
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = isRubberStay ? Color.red : Color.green;
+        Gizmos.color = isColliderStay ? Color.red : Color.green;
         Gizmos.DrawWireCube(transform.position, transform.localScale);
     }
 }
